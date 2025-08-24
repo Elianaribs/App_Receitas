@@ -23,13 +23,13 @@ class RecipeCard extends StatelessWidget {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) =>
-                    loadingProgress == null
+                loadingProgress == null
                     ? child
                     : Center(
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
                 errorBuilder: (context, child, stackTrace) => Container(
                   height: 200,
                   width: double.infinity,

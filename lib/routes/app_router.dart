@@ -13,6 +13,7 @@ class AppRouter {
           builder: (context, state, child) => BaseScreen(child: child),
           routes: [
             GoRoute(path: '/', builder: (context, state) => RecipesView()),
+            GoRoute(path: "/search", builder: (context, state) => RecipesView())
           ],
         ),
       ],

@@ -41,7 +41,7 @@ class CustomDrawer extends StatelessWidget {
                       foregroundColor: Theme.of(context).colorScheme.surface,
                     ),
                     icon: Obx(
-                      () => !theme.isDark.value
+                          () => !theme.isDark.value
                           ? Icon(Icons.nightlight_round_sharp, size: 24)
                           : Icon(Icons.wb_sunny_outlined, size: 24),
                     ),
