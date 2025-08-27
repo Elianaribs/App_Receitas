@@ -63,6 +63,8 @@ class Recipe {
     );
   }
 
+  get value => null;
+
   // Recipe -> JSON
   Map<String, dynamic> toJson() {
     return {

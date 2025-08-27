@@ -1,11 +1,12 @@
+import 'package:app4_receitas/di/service_locator.dart';
 import 'package:app4_receitas/ui/recipedetail/recipe_detail_viewmodel.dart';
 import 'package:app4_receitas/ui/widgets/recipe_row_details.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import '../../di/service_locator.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class  RecipeDetailView extends StatefulWidget {
+class RecipeDetailView extends StatefulWidget {
   const RecipeDetailView({super.key, required this.id});
 
   final String id;
@@ -15,7 +16,6 @@ class  RecipeDetailView extends StatefulWidget {
 }
 
 class _RecipeDetailViewState extends State<RecipeDetailView> {
-
   final viewModel = getIt<RecipeDetailViewModel>();
 
   @override
@@ -28,7 +28,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx( () {
+    return Obx(() {
       if (viewModel.isLoading) {
         return Center(
           child: SizedBox(
@@ -62,70 +62,99 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
         );
       }
 
-      final recipe = viewModel.recipes!;
+      final recipe = viewModel.recipe;
       return SingleChildScrollView(
         child: Column(
           children: [
-           Image.network(
-            recipe.image!,
-            height: 400,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) =>
-             loadingProgress == null
-              ? child
-              : Center(
-               child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          errorBuilder: (context, child, stackTrace) => Container(
-            height: 400,
-            width: double.infinity,
-            color: Theme.of(context).colorScheme.primary,
-            child: Icon(Icons.error),
-          ),
-           ),
-            Padding(
-                padding:const EdgeInsets.all(16),
-              child: Column(children: [
-                Text(recipe.name),
-                const SizedBox(height: 16),
-                RecipeRowDetails(recipe: recipe),
-                const SizedBox(height: 16),
-                recipe.ingredients.isNotEmpty
-                ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Text('Ingredientes:'),
-                  const SizedBox(height: 8,),
-                  Text(recipe.ingredients.join('\n'))
-                ],
-                )
-                    :Text('Nenhum ingrediente listado'),
-                const SizedBox(height: 16),
-                recipe.instructions.isNotEmpty
-                ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('Modo de preparo:'),
-                    const SizedBox(height: 8,),
-                    Text(recipe.instructions.join('\n')),
-                  ],
-                )
-                    : Text('Nenhum modo de preparo informado'),
-                const SizedBox(height: 16,),
-                Row(mainAxisAlignment:MainAxisAlignment.center, 
-                  children: [
-                  ElevatedButton(onPressed: () => context.go('/'),
-                      child: Text('VOLTAR'),
-                  ),
-                    ElevatedButton(onPressed: () => viewModel.toggleFavorite(),
-                      child: Text(viewModel.isFavorite ? 'DESFAVORITAR' : 'FAVORITAR'),
-                    ),
-                ],
-                )
-              ],
+            Image.network(
+              recipe!.image!,
+              height: 400,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) =>
+              loadingProgress == null
+                  ? child
+                  : Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
-            )
+              errorBuilder: (context, child, stackTrace) => Container(
+                height: 400,
+                width: double.infinity,
+                color: Theme.of(context).colorScheme.primary,
+                child: Icon(Icons.error),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(
+                    recipe.name,
+                    style: GoogleFonts.dancingScript(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  RecipeRowDetails(recipe: recipe),
+                  const SizedBox(height: 16),
+                  recipe.ingredients.isNotEmpty
+                      ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Ingredientes:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(recipe.ingredients.join('\n')),
+                    ],
+                  )
+                      : Text('Nenhum ingrediente listado.'),
+                  const SizedBox(height: 16),
+                  recipe.instructions.isNotEmpty
+                      ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Instruções:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(recipe.instructions.join('\n')),
+                    ],
+                  )
+                      : Text('Nenhuma instrução :('),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => context.go('/'),
+                        child: Text('VOLTAR'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => viewModel.toggleFavorite(),
+                        child: Text(
+                          viewModel.isFavorite ? 'DESFAVORITAR' : 'FAVORITAR',
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 32),
+                ],
+              ),
+            ),
           ],
         ),
       );
