@@ -1,10 +1,13 @@
 import 'package:app4_receitas/data/models/recipe.dart';
 import 'package:app4_receitas/data/repositories/recipe_repository.dart';
 import 'package:app4_receitas/di/service_locator.dart';
+import 'package:either_dart/either.dart';
 import 'package:get/get.dart';
+import '../../data/repositories/auth_repository.dart';
 
 class RecipeDetailViewModel extends GetxController {
   final _repository = getIt<RecipeRepository>();
+  final _authRepository = getIt<AuthRepository>();
 
   // Estados
   final Rxn<Recipe> _recipe = Rxn<Recipe>();
@@ -23,8 +26,11 @@ class RecipeDetailViewModel extends GetxController {
       _isLoading.value = true;
       _errorMessage.value = '';
       _recipe.value = await _repository.getRecipeById(id);
-      // TODO: Como obter o userId do usuário atual?
-      final userId = recipe!.userId;
+      var userId = '';
+      await _authRepository.currentUser.fold(
+            (left) => _errorMessage.value = left.message,
+            (right) => userId = right.id,
+      );
       _isFavorite.value = await isRecipeFavorite(id, userId);
     } catch (e) {
       _errorMessage.value = 'Falha ao buscar receita: ${e.toString()}';
@@ -48,14 +54,17 @@ class RecipeDetailViewModel extends GetxController {
   }
 
   Future<void> toggleFavorite() async {
-    // TODO: Como obter o userId do usuário atual?
-    final currentUserId = recipe!.userId;
+    var userId = '';
+      await _authRepository.currentUser.fold(
+              (left) => _errorMessage.value = left.message,
+              (right) => userId = right.id,
+      );
     final recipeId = recipe!.id;
 
     if (_isFavorite.value) {
-      await removeFromFavorites(recipeId, currentUserId);
+      await removeFromFavorites(recipeId, userId);
     } else {
-      await addToFavorites(recipeId, currentUserId);
+      await addToFavorites(recipeId, userId);
     }
   }
 

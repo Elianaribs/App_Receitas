@@ -1,6 +1,5 @@
 import 'package:app4_receitas/data/models/recipe.dart';
 import 'package:app4_receitas/data/models/services/recipe_service.dart';
-import 'package:app4_receitas/data/repositories/recipe_repository.dart' as _service;
 import 'package:app4_receitas/di/service_locator.dart';
 
 class RecipeRepository {
