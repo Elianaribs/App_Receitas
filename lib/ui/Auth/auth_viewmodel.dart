@@ -1,5 +1,6 @@
 import 'package:app4_receitas/data/repositories/auth_repository.dart';
 import 'package:app4_receitas/di/service_locator.dart';
+import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -97,12 +98,25 @@ class AuthViewModel extends GetxController {
       print(errorMessage);
     }, (right) {
       print(right);
+      _clearFields();
       return;
     });
   }
 
   Future<void> register() async {
-    // TODO: lógica para registro
+    final response = _repository.signUp(
+        email: emailController.text,
+        password: passwordController.text,
+        username: usernameController.text,
+        avatarUrl: avatarUrlController.text
+    );
+    response.fold((left){
+      _errorMessage.value = left.message;
+    }, (right) {
+      _errorMessage.value = 'Confirme seu email.';
+      _isLoginMode.value = true;
+      _clearFields();
+    });
   }
 
   @override

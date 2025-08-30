@@ -15,11 +15,29 @@ class RecipeDetailView extends StatefulWidget {
   State<RecipeDetailView> createState() => _RecipeDetailViewState();
 }
 
-class _RecipeDetailViewState extends State<RecipeDetailView> {
+class _RecipeDetailViewState extends State<RecipeDetailView>
+    with SingleTickerProviderStateMixin{
   final viewModel = getIt<RecipeDetailViewModel>();
+
+  late AnimationController _animationController;
+  late Animation <double> _animation;
 
   @override
   void initState() {
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    _animation = CurvedAnimation(parent: _animationController, curve: Curves.bounceInOut)
+      ..addListener(() => setState(() {}))
+      ..addStatusListener((listener){
+        if(listener == AnimationStatus.completed){
+          _animationController.reverse();
+        }
+      });
+
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       viewModel.loadRecipe(widget.id);
@@ -27,8 +45,15 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Obx(() {
+    return Builder(
+        builder: (context) {
       if (viewModel.isLoading) {
         return Center(
           child: SizedBox(
@@ -63,100 +88,139 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
       }
 
       final recipe = viewModel.recipe;
-      return SingleChildScrollView(
-        child: Column(
-          children: [
-            Image.network(
-              recipe!.image!,
-              height: 400,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) =>
-              loadingProgress == null
-                  ? child
-                  : Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              errorBuilder: (context, child, stackTrace) => Container(
+      return Stack(
+        children:[
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              Image.network(
+                recipe!.image!,
                 height: 400,
                 width: double.infinity,
-                color: Theme.of(context).colorScheme.primary,
-                child: Icon(Icons.error),
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) =>
+                loadingProgress == null
+                    ? child
+                    : Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                errorBuilder: (context, child, stackTrace) => Container(
+                  height: 400,
+                  width: double.infinity,
+                  color: Theme.of(context).colorScheme.primary,
+                  child: Icon(Icons.error),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Text(
-                    recipe.name,
-                    style: GoogleFonts.dancingScript(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      recipe.name,
+                      style: GoogleFonts.dancingScript(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  RecipeRowDetails(recipe: recipe),
-                  const SizedBox(height: 16),
-                  recipe.ingredients.isNotEmpty
-                      ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Ingredientes:',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    const SizedBox(height: 16),
+                    RecipeRowDetails(recipe: recipe),
+                    const SizedBox(height: 16),
+                    recipe.ingredients.isNotEmpty
+                        ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Ingredientes:',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(recipe.ingredients.join('\n')),
-                    ],
-                  )
-                      : Text('Nenhum ingrediente listado.'),
-                  const SizedBox(height: 16),
-                  recipe.instructions.isNotEmpty
-                      ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Instruções:',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 8),
+                        Text(recipe.ingredients.join('\n')),
+                      ],
+                    )
+                        : Text('Nenhum ingrediente listado.'),
+                    const SizedBox(height: 16),
+                    recipe.instructions.isNotEmpty
+                        ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Instruções:',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(recipe.instructions.join('\n')),
-                    ],
-                  )
-                      : Text('Nenhuma instrução :('),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => context.go('/'),
-                        child: Text('VOLTAR'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => viewModel.toggleFavorite(),
-                        child: Text(
-                          viewModel.isFavorite ? 'DESFAVORITAR' : 'FAVORITAR',
+                        const SizedBox(height: 8),
+                        Text(recipe.instructions.join('\n')),
+                      ],
+                    )
+                        : Text('Nenhuma instrução :('),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => context.go('/'),
+                          child: Text('VOLTAR'),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 32),
-                ],
+                        Obx((){
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder: (child, animation){
+                              return ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              );
+                            },
+                            child: ElevatedButton(
+                              key: ValueKey<bool>(viewModel.isFavorite),
+                              onPressed: () {viewModel.toggleFavorite();
+                                _animationController.forward();
+                                },
+                              child: Text(
+                                viewModel.isFavorite
+                                    ? 'DESFAVORITAR'
+                                    : 'FAVORITAR',
+                              ),
+                            ),
+                          );
+                        })
+                      ],
+                    ),
+                    SizedBox(height: 32),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+          Positioned.fill(
+              child: Center(
+                child: FadeTransition(
+                  opacity: _animation,
+                  child: ScaleTransition(scale: Tween(begin: 0.0, end: 1.0).animate(_animation),
+                    child: Obx((){
+                    return Icon(viewModel.isFavorite
+                        ? Icons.favorite
+                        : Icons.heart_broken,
+                    color: viewModel.isFavorite
+                    ? Colors.red
+                        : Colors.grey,
+                      size: 200,
+                    );
+                  }),
+                  ),
+                ),
+              )
+          )
+        ],
       );
     });
   }

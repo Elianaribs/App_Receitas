@@ -37,13 +37,13 @@ void _onItemTapped(int index) {
       theme.toogleTheme();
       break;
    }
-
   }
 
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
+        selectedItemColor: Theme.of(context).colorScheme.error,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.restaurant_menu),label: 'Receitas'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite),label: 'Favoritas'),

@@ -78,7 +78,7 @@ class AuthService {
         await _supabaseClient.from('profiles').insert({
           'id': result.right.user!.id,
           'username': username,
-          'avatarUrl': avatarUrl,
+          'avatar_url': avatarUrl,
         });
         return Right(right);
       });
