@@ -4,7 +4,6 @@ import 'package:app4_receitas/ui/widgets/recipe_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RecipesView extends StatefulWidget {
   const RecipesView({super.key});
