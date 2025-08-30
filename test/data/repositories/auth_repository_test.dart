@@ -227,8 +227,252 @@ void main() {
       });
     });
 
-    // TODO: signUp e signOut
-    group('signUp', () {});
-    group('signOut', () {});
+    group('signUp', () {
+      test(
+        'deve retornar UserProfile quando cadastro e bemsucedido',
+            () async {
+          // Arrange
+          final mockUser = User(
+            id: 'user-id',
+            appMetadata: {},
+            userMetadata: {},
+            aud: 'authenticated',
+            createdAt: DateTime.now().toIso8601String(),
+          );
+          final mockAuthResponse = AuthResponse(user: mockUser);
+
+          when(
+            mockAuthService.signUp(
+              email: 'test@email.com',
+              password: 'password123',
+              username: 'testuser',
+              avatarUrl: 'avatar.jpg',
+            ),
+          ).thenAnswer((_) async => Right(mockAuthResponse));
+
+          final mockProfile = {
+            'email': 'test@email.com',
+            'password': 'password123',
+            'username': 'testuser',
+            'avatarUrl': 'avatar.jpg',
+          };
+          when(
+            mockAuthService.fetchUserProfile('user-id'),
+          ).thenAnswer((_) async => Right(mockProfile));
+
+          // Act
+          final result = await authRepository.signUp(
+            email: 'test@email.com',
+            password: 'password123',
+            username: 'testuser',
+            avatarUrl: 'avatar.jpg',
+          );
+
+          // Assert
+          expect(result.isRight, true);
+          expect(result.right.username, equals('testuser'));
+          verify(
+            mockAuthService.signUp(
+              email: 'test@email.com',
+              password: 'password123',
+              username: 'testuser',
+              avatarUrl: 'avatar.jpg',
+            ),
+          ).called(1);
+          verify(mockAuthService.fetchUserProfile('user-id')).called(1);
+        },
+      );
+
+      test('deve retornar erro quando email ja existe', () async {
+        // Arrange
+        when(
+          mockAuthService.signUp(
+            email: 'existing@email.com',
+            password: 'password123',
+            username: 'testuser',
+            avatarUrl: 'avatar.jpg',
+          ),
+        ).thenAnswer((_) async => Left(AppError('E-mail ja cadastrado')));
+
+        // Act
+        final result = await authRepository.signUp(
+          email: 'existing@email.com',
+          password: 'password123',
+          username: 'testuser',
+          avatarUrl: 'avatar.jpg',
+        );
+
+        // Assert
+        expect(result.isLeft, true);
+        expect(result.left.message, equals('E-mail ja cadastrado'));
+      });
+
+      test('deve retornar erro quando username ja existe', () async {
+        // Arrange
+        when(
+          mockAuthService.signUp(
+            email: 'test@email.com',
+            password: 'password123',
+            username: 'existinguser',
+            avatarUrl: 'avatar.jpg',
+          ),
+        ).thenAnswer((_) async => Left(AppError('Username ja existe')));
+
+        // Act
+        final result = await authRepository.signUp(
+          email: 'test@email.com',
+          password: 'password123',
+          username: 'existinguser',
+          avatarUrl: 'avatar.jpg',
+        );
+
+        // Assert
+        expect(result.isLeft, true);
+        expect(result.left.message, equals('Username ja existe'));
+      });
+
+      test(
+        'deve retornar erro quando fetchUserProfile falha apos signUp',
+            () async {
+          // Arrange
+          final mockUser = User(
+            id: 'user-id',
+            appMetadata: {},
+            userMetadata: {},
+            aud: 'authenticated',
+            createdAt: DateTime.now().toIso8601String(),
+          );
+          final mockAuthResponse = AuthResponse(user: mockUser);
+
+          when(
+            mockAuthService.signUp(
+              email: 'test@email.com',
+              password: 'password123',
+              username: 'testuser',
+              avatarUrl: 'avatar.jpg',
+            ),
+          ).thenAnswer((_) async => Right(mockAuthResponse));
+
+          when(
+            mockAuthService.fetchUserProfile('user-id'),
+          ).thenAnswer((_) async => Left(AppError('Erro ao carregar profile')));
+
+          // Act
+          final result = await authRepository.signUp(
+            email: 'test@email.com',
+            password: 'password123',
+            username: 'testuser',
+            avatarUrl: 'avatar.jpg',
+          );
+
+          // Assert
+          expect(result.isLeft, true);
+          expect(result.left.message, equals('Erro ao carregar profile'));
+        },
+      );
+
+      test(
+        'deve retornar erro quando email nao foi confirmado no signUp',
+            () async {
+          // Arrange
+          when(
+            mockAuthService.signUp(
+              email: 'test@email.com',
+              password: 'password123',
+              username: 'testuser',
+              avatarUrl: 'avatar.jpg',
+            ),
+          ).thenAnswer((_) async => Left(AppError('Email nao confirmado')));
+
+          // Act
+          final result = await authRepository.signUp(
+            email: 'test@email.com',
+            password: 'password123',
+            username: 'testuser',
+            avatarUrl: 'avatar.jpg',
+          );
+
+          // Assert
+          expect(result.isLeft, true);
+          expect(result.left.message, equals('Email nao confirmado'));
+        },
+      );
+
+      test('deve retornar erro quando ha erro inesperado no cadastro', () async {
+        // Arrange
+        when(
+          mockAuthService.signUp(
+            email: 'test@email.com',
+            password: 'password123',
+            username: 'testuser',
+            avatarUrl: 'avatar.jpg',
+          ),
+        ).thenAnswer((_) async => Left(AppError('Erro ao fazer cadastro')));
+
+        // Act
+        final result = await authRepository.signUp(
+          email: 'test@email.com',
+          password: 'password123',
+          username: 'testuser',
+          avatarUrl: 'avatar.jpg',
+        );
+
+        // Assert
+        expect(result.isLeft, true);
+        expect(result.left.message, equals('Erro ao fazer cadastro'));
+      });
+
+      test('deve retornar erro inesperado no signUp', () async {
+        // Arrange
+        when(
+          mockAuthService.signUp(
+            email: 'test@email.com',
+            password: 'password123',
+            username: 'testuser',
+            avatarUrl: 'avatar.jpg',
+          ),
+        ).thenAnswer((_) async => Left(AppError('Erro inesperado')));
+
+        // Act
+        final result = await authRepository.signUp(
+          email: 'test@email.com',
+          password: 'password123',
+          username: 'testuser',
+          avatarUrl: 'avatar.jpg',
+        );
+
+        // Assert
+        expect(result.isLeft, true);
+        expect(result.left.message, equals('Erro inesperado'));
+      });
+    });
+
+    group('signOut', () {
+      test('deve retornar sucesso quando logout e bem sucedido', () async {
+        // Arrange
+        when(mockAuthService.signOut()).thenAnswer((_) async => Right(null));
+
+        // Act
+        final result = await authRepository.signOut();
+
+        // Assert
+        expect(result.isRight, true);
+        verify(mockAuthService.signOut()).called(1);
+      });
+
+      test('deve retornar erro quando logout falha', () async {
+        // Arrange
+        when(
+          mockAuthService.signOut(),
+        ).thenAnswer((_) async => Left(AppError('Erro ao fazer logout')));
+
+        // Act
+        final result = await authRepository.signOut();
+
+        // Assert
+        expect(result.isLeft, true);
+        expect(result.left.message, equals('Erro ao fazer logout'));
+      });
+    });
   });
 }
